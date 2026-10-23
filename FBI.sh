@@ -89,12 +89,14 @@ new_result_file() {
 banner() {
     printf '%s%s' "$RED" "$BOLD"
     cat <<'BANNER'
+
         ███████╗██████╗ ██╗
         ██╔════ ██╔══██╗██║
         █████╗  ██████╔╝██║
         ██╔══╝  ██╔══██╗██║
         ██║     ██████╔╝██║
         ╚═╝     ╚═════╝ ╚═╝
+
 BANNER
     printf '%s%sF.B.I. — Forensic Behavioral Intelligence%s\n' \
         "$WHITE" "$BOLD" "$RESET"
@@ -797,7 +799,8 @@ phrase_counts() {
                 # Common conversational words, auxiliary verbs, and generic
                 # engagement language. Keep technical terms such as "usb",
                 # "debugging", "kali", "linux", and "forensics" searchable.
-                split("a an and are am as at be been being but by can cannot could did do does doing for from had has have he her here hers him his how i if in into is it its just me more most my no not of on or our out over she so some than that the their them then there these they this those through to too up us very was we were what when where which while who why will with would you your about after again also because before both each even every few get got going good great hello hey hi how like look love make much need nice only other really same say see should since still such thank thanks thats thing things think time today together use used using video videos want well work yeah yes right appreciate please channel comments comment never people keep something anything watching watch way glad enjoyed enjoy hope thanks thank welcome subscribe subscribed following watching watched share support appreciate " , words, " ")
+                split("a an and are am as at be been being but by can cannot could did do does doing for from had has have he her here hers him his how i if in into is it its just me more most my no not of on or our out over she so some than that the their them then there these they this those through to too up us very was we were what when where which while who why will with would you your about after again also because before both each even every few get got going good", words)
+
                 for (i in words) stop[words[i]] = 1
 
                 # The channel handle appears frequently in comments
@@ -835,7 +838,16 @@ phrase_counts() {
     )
 
     if [[ -n "$output" ]]; then
-        printf '%s\n' "$output"
+        # Color only the phrase text, leaving the occurrence count unchanged.
+        printf '%s\n' "$output" |
+            awk -v cyan="$CYAN" -v reset="$RESET" '
+                {
+                    phrase = $0
+                    sub(/^[[:space:]]*[0-9]+ occurrences  /, "", phrase)
+                    count = $1
+                    printf "%7s occurrences  %s%s%s\n", count, cyan, phrase, reset
+                }
+            '
     else
         printf '  No recurring phrases found.\n'
     fi
@@ -916,21 +928,21 @@ analyze_archive() {
     )
 
     {
+
         printf '%s\n' "F.B.I. — FORENSIC BEHAVIORAL INTELLIGENCE"
         printf '%s\n' "AUTOMATED COMMENT ARCHIVE ANALYSIS"
-        printf 'Generated: %s\n' "$(date '+%Y-%m-%d %H:%M:%S %Z')"
-        printf 'Source directory: %s\n' "$COMMENTS_DIR"
+        printf 'Generated: %s%s%s\n' "$CYAN" "$(date '+%Y-%m-%d %H:%M:%S %Z')" "$RESET"
+        printf 'Source directory: %s%s%s\n' "$CYAN" "$COMMENTS_DIR" "$RESET"
         printf '%s\n\n' \
             "============================================================"
 
         printf '%s\n' "1. DATASET OVERVIEW"
         printf '%s\n' "-------------------"
-        printf 'Total comment records: %s\n' "$total"
-        printf 'Videos represented:    %s\n' "$videos"
-        printf 'Unique commenters:     %s\n' "$commenters"
-        printf 'Unique URL domains:    %s\n' "$unique_domains"
-        printf 'Records with numeric timestamps: %s\n\n' "$timestamped"
-
+        printf 'Total comment records: %s%s%s\n' "$CYAN" "$total" "$RESET"
+        printf 'Videos represented:    %s%s%s\n' "$CYAN" "$videos" "$RESET"
+        printf 'Unique commenters:     %s%s%s\n' "$CYAN" "$commenters" "$RESET"
+        printf 'Unique URL domains:    %s%s%s\n' "$CYAN" "$unique_domains" "$RESET"
+        printf 'Numeric timestamps:    %s%s%s\n\n' "$CYAN" "$timestamped" "$RESET"
 
         printf '\n%s\n' "2. TOP 10 COMMENTERS"
         printf '%s\n' "--------------------"
@@ -1021,7 +1033,8 @@ analyze_archive() {
             uniq -c |
             sort -rn |
             head -n 20 |
-            awk '{ printf "%7s occurrences  %s\n", $1, $2 }'
+            awk -v cyan="$CYAN" -v reset="$RESET" \
+                '{ printf "%7s occurrences  %s%s%s\n", $1, cyan, $2, reset }'
 
         printf '\n%s\n' "5. MOST FREQUENT PHRASES"
         printf '%s\n' "-------------------------"
@@ -1049,7 +1062,8 @@ analyze_archive() {
             uniq -c |
             sort -rn |
             head -n 15 |
-            awk '{ printf "%7s references  %s\n", $1, substr($0, index($0,$2)) }'
+            awk -v cyan="$CYAN" -v reset="$RESET" \
+                '{ printf "%7s references  %s%s%s\n", $1, cyan, $2, reset }'
 
         printf '\n%s\n' "7. REPEATED COMMENT TEXT"
         printf '%s\n' "------------------------"
@@ -1065,7 +1079,8 @@ analyze_archive() {
             awk '$1 > 1 { print }' |
             sort -rn |
             head -n 10 |
-            awk '{ printf "%7s copies  %s\n", $1, substr($0, index($0,$2)) }'
+            awk -v white="$WHITE" -v reset="$RESET" \
+                '{ printf "%7s copies  %s%s%s\n", $1, white, substr($0, index($0,$2)), reset }'
 
         printf '\n%s\n' "8. ESTIMATED COMMENT DATES (UTC)"
         printf '%s\n' "---------------------------------"
@@ -1086,7 +1101,8 @@ analyze_archive() {
             sort |
             uniq -c |
             sort -k2 |
-            awk '{ printf "%s  %7s comments\n", $2, $1 }'
+        awk -v cyan="$CYAN" -v reset="$RESET" \
+            '{ printf "%s  %s%7s comments%s\n", $2, cyan, $1, reset }'
 
         printf '\n%s\n' "9. ANALYSIS NOTES"
         printf '%s\n' "-----------------"
