@@ -17,7 +17,7 @@ jq -c 'if type == "array" then .[0] else . end' \
 
 ```bash
 jq -r 'if type == "array" then .[0] else . end | keys[]' \
-  youtube-comments/comments/0-58NqzONK8.json | sort
+  youtube-comments/comments/0-58NqzONK8.json | sort -u
 ```
 
 This prints the keys present in that record. Other comments may have additional or missing fields.
